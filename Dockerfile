@@ -7,13 +7,15 @@ ARG TAG
 COPY v2ray.sh "${WORKDIR}"/v2ray.sh
 
 RUN apt-get update \
-    && apt-get install -y ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
+    && apt-get install -y ca-certificates wget \
     && mkdir -p /etc/v2ray /usr/local/share/v2ray /var/log/v2ray \
     # forward request and error logs to docker log collector
     && ln -sf /dev/stdout /var/log/v2ray/access.log \
     && ln -sf /dev/stderr /var/log/v2ray/error.log \
     && chmod +x "${WORKDIR}"/v2ray.sh \
-    && "${WORKDIR}"/v2ray.sh "${TARGETPLATFORM}" "${TAG}"
+    && "${WORKDIR}"/v2ray.sh "${TARGETPLATFORM}" "${TAG}" \
+    && apt-get remove -y wget \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/usr/bin/v2ray"]
